@@ -10,9 +10,8 @@ jobs:
     steps:
       - checkout
       - run: yarn && yarn build
-      - run: ls
       - aws-s3/sync:
-          from: ./dist # local dir
+          from: build # local dir
           to: s3://circle-frontend
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY

@@ -2,9 +2,13 @@ version: 2.1
 
 orbs:
   aws-s3: circleci/aws-s3@1.0.11
+  slack: circleci/slack@3.3.0
 
 jobs:
-  build-and-deploy-to-s3:
+  build-and-deploy-frontend:
+    parameters:
+      aws-s3-bucket:
+        type: string
     docker:
       - image: 'circleci/node:11.11'
     steps:
@@ -12,7 +16,7 @@ jobs:
       - run: yarn && yarn build
       - aws-s3/sync:
           from: build # local dir
-          to: s3://circle-frontend
+          to: << parameters.aws-access-key-id >>
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
           aws-region: AWS_REGION
@@ -20,11 +24,14 @@ jobs:
             --acl public-read \
             --cache-control "max-age=86400"
           overwrite: true
+      # - slack/status:
+      #     webhook: '${SLACK_WEBHOOK_URL}'
 
 workflows:
   deploy-frontend-master:
     jobs:
-      - build-and-deploy-to-s3:
+      - build-and-deploy-frontend:
+          aws-s3-bucket: '${AWS_S3_BUCKET}'
           filters:
             branches:
               only: master # only this branch will be built

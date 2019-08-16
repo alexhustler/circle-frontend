@@ -6,9 +6,6 @@ orbs:
 
 jobs:
   build-and-deploy-frontend:
-    parameters:
-      aws-s3-bucket:
-        type: string
     docker:
       - image: 'circleci/node:11.11'
     steps:
@@ -16,7 +13,7 @@ jobs:
       - run: yarn && yarn build
       - aws-s3/sync:
           from: build # local dir
-          to: << parameters.aws-s3-bucket >>
+          to: '${AWS_S3_BUCKET}'
           aws-access-key-id: AWS_ACCESS_KEY_ID
           aws-secret-access-key: AWS_SECRET_ACCESS_KEY
           aws-region: AWS_REGION
@@ -31,7 +28,6 @@ workflows:
   deploy-frontend-master:
     jobs:
       - build-and-deploy-frontend:
-          aws-s3-bucket: '${AWS_S3_BUCKET}'
           filters:
             branches:
               only: master # only this branch will be built

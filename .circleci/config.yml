@@ -1,0 +1,30 @@
+version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@1.0.11
+
+jobs:
+  build-and-deploy-to-s3:
+    docker:
+      - image: 'circleci/python:2.7'
+    steps:
+      - checkout
+      - run: mkdir bucket && cd bucket && yarn build
+      - aws-s3/sync:
+          from: bucket # local dir
+          to: FRONTEND_S3_BUCKET
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          aws-region: AWS_REGION_BLUE
+          arguments: |
+            --acl public-read \
+            --cache-control "max-age=86400"
+          overwrite: true
+
+workflows:
+  deploy-frontend-master:
+    jobs:
+      - build-and-deploy-to-s3:
+          filters:
+            branches:
+              only: master # only this branch will be built
